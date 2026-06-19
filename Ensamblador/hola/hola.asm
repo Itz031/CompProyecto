@@ -1,19 +1,17 @@
-section .data
-    msg db '¡Hola Mundo!', 0xa  ; Cadena con salto de línea
-    len equ $ - msg             ; Calcular longitud
+.386
+.model flat, stdcall
+option casemap :none
+include \masm32\include\windows.inc
+include \masm32\include\kernel32.inc
+include \masm32\include\masm32.inc
+includelib \masm32\lib\kernel32.lib
+includelib \masm32\lib\masm32.lib
 
-section .text
-    global _start
+.data
+    msg db "¡Hola Mundo desde MASM!", 10, 13, 0
 
-_start:
-    ; sys_write (4)
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, msg
-    mov edx, len
-    int 0x80
-
-    ; sys_exit (1)
-    mov eax, 1
-    mov ebx, 0
-    int 0x80
+.code
+start:
+    invoke StdOut, addr msg
+    invoke ExitProcess, 0
+end start
