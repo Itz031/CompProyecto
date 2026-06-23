@@ -4,21 +4,46 @@ from ASTNode import ASTNode
 class Parser:
     def __init__(self, tokens):
         self.tokens, self.pos = tokens, 0
+        
     def actual(self): return self.tokens[self.pos]
+    
     def coincidir(self, tipo):
         if self.actual().tipo == tipo:
             t = self.actual()
             self.pos += 1
             return t
         return None
+        
     def esperar(self, tipo):
         t = self.coincidir(tipo)
-        if not t: raise SyntaxError(f"Se esperaba {tipo.name} pero se encontro {self.actual().tipo.name}")
+        if not t: 
+            # ¡AQUÍ GENERAMOS EL ERROR DE SINTAXIS AMIGABLE!
+            actual = self.actual()
+            raise SyntaxError(f"Error de Sintaxis en la línea {actual.linea}: Se esperaba '{tipo.name}' pero se encontro '{actual.valor}'")
         return t
+        
     def parse(self):
         root = ASTNode("PROGRAMA")
-        while self.actual().tipo != TokenType.EOF: root.agregar_hijo(self.parse_sentencia())
+        while self.actual().tipo != TokenType.EOF: 
+            root.agregar_hijo(self.parse_funcion()) # Ahora exige leer funciones (int main)
         return root
+        
+    def parse_funcion(self):
+        self.esperar(TokenType.INT)
+        nombre = self.esperar(TokenType.IDENTIFICADOR)
+        self.esperar(TokenType.PARENTESIS_IZQ)
+        self.esperar(TokenType.PARENTESIS_DER)
+        self.esperar(TokenType.LLAVE_IZQ)
+        
+        n = ASTNode("FUNCION", nombre.valor)
+        b = ASTNode("BLOQUE")
+        while self.actual().tipo != TokenType.LLAVE_DER and self.actual().tipo != TokenType.EOF: 
+            b.agregar_hijo(self.parse_sentencia())
+            
+        self.esperar(TokenType.LLAVE_DER)
+        n.agregar_hijo(b)
+        return n
+        
     def parse_sentencia(self):
         t = self.actual().tipo
         if t == TokenType.INT: return self.parse_declaracion()
@@ -26,19 +51,25 @@ class Parser:
         elif t == TokenType.PRINT: return self.parse_impresion()
         elif t == TokenType.WHILE: return self.parse_while()
         elif t == TokenType.IF: return self.parse_if()
-        else: raise SyntaxError(f"Sentencia no reconocida: {self.actual().valor}")
+        elif t == TokenType.RETURN: return self.parse_return()
+        else: 
+            actual = self.actual()
+            raise SyntaxError(f"Error de Sintaxis en la línea {actual.linea}: Instrucción no reconocida '{actual.valor}'")
+            
     def parse_declaracion(self):
         self.esperar(TokenType.INT)
         n = ASTNode("DECLARACION", self.esperar(TokenType.IDENTIFICADOR).valor)
         if self.coincidir(TokenType.ASIGNACION): n.agregar_hijo(self.parse_expresion())
         self.esperar(TokenType.PUNTO_COMA)
         return n
+        
     def parse_asignacion(self):
         n = ASTNode("ASIGNACION", self.esperar(TokenType.IDENTIFICADOR).valor)
         self.esperar(TokenType.ASIGNACION)
         n.agregar_hijo(self.parse_expresion())
         self.esperar(TokenType.PUNTO_COMA)
         return n
+        
     def parse_impresion(self):
         self.esperar(TokenType.PRINT)
         self.esperar(TokenType.PARENTESIS_IZQ)
@@ -47,6 +78,7 @@ class Parser:
         self.esperar(TokenType.PARENTESIS_DER)
         self.esperar(TokenType.PUNTO_COMA)
         return n
+        
     def parse_while(self):
         n = ASTNode("WHILE")
         self.esperar(TokenType.WHILE)
@@ -59,6 +91,7 @@ class Parser:
         self.esperar(TokenType.LLAVE_DER)
         n.agregar_hijo(b)
         return n
+        
     def parse_if(self):
         n = ASTNode("IF")
         self.esperar(TokenType.IF)
@@ -77,6 +110,15 @@ class Parser:
             self.esperar(TokenType.LLAVE_DER)
             n.agregar_hijo(be)
         return n
+        
+    def parse_return(self):
+        self.esperar(TokenType.RETURN)
+        n = ASTNode("RETURN")
+        if self.actual().tipo != TokenType.PUNTO_COMA:
+            n.agregar_hijo(self.parse_expresion())
+        self.esperar(TokenType.PUNTO_COMA)
+        return n
+        
     def parse_condicion(self):
         n = ASTNode("CONDICION")
         n.agregar_hijo(self.parse_expresion())
@@ -86,6 +128,7 @@ class Parser:
             n.valor = op.valor
         n.agregar_hijo(self.parse_expresion())
         return n
+        
     def parse_expresion(self):
         izq = self.actual()
         if izq.tipo in [TokenType.NUMERO, TokenType.IDENTIFICADOR]:
@@ -102,4 +145,4 @@ class Parser:
                     n_op.agregar_hijo(ASTNode("TERMINO", der.valor))
                     return n_op
             return n_izq
-        raise SyntaxError("Expresion invalida")
+        raise SyntaxError(f"Error de Sintaxis en la línea {izq.linea}: Expresión inválida cerca de '{izq.valor}'")

@@ -13,7 +13,9 @@ class GeneradorCodigo:
 
     def generar(self):
         self.visitar_nodo(self.ast)
-        self.seccion_codigo += "    invoke ExitProcess, 0\nend start\n"
+        
+        # En MASM ya no ponemos el ExitProcess fijo aquí, porque C tiene el "return 0;"
+        self.seccion_codigo += "end start\n"
         
         encabezado = (
             ".386\n.model flat, stdcall\noption casemap :none\n"
@@ -29,6 +31,15 @@ class GeneradorCodigo:
     def visitar_nodo(self, nodo):
         if nodo.tipo in ["PROGRAMA", "BLOQUE", "BLOQUE_IF", "BLOQUE_ELSE"]:
             for h in nodo.hijos: self.visitar_nodo(h)
+            
+        elif nodo.tipo == "FUNCION":
+            # Es el main(). Visitamos su cuerpo (BLOQUE)
+            self.visitar_nodo(nodo.hijos[0])
+            
+        elif nodo.tipo == "RETURN":
+            # El return de C se traduce al ExitProcess de Ensamblador
+            self.seccion_codigo += "    invoke ExitProcess, 0\n"
+            
         elif nodo.tipo == "DECLARACION":
             nombre = nodo.valor
             if nombre not in self.variables_declaradas:
@@ -37,9 +48,13 @@ class GeneradorCodigo:
             if nodo.hijos:
                 self.evaluar_expresion(nodo.hijos[0])
                 self.seccion_codigo += f"    mov {nombre}, eax\n"
+                
         elif nodo.tipo == "ASIGNACION":
+            if nodo.valor not in self.variables_declaradas:
+                raise Exception(f"Error Semántico: La variable '{nodo.valor}' no ha sido declarada.")
             self.evaluar_expresion(nodo.hijos[0])
             self.seccion_codigo += f"    mov {nodo.valor}, eax\n"
+            
         elif nodo.tipo == "IMPRIMIR_VAR":
             self.seccion_codigo += f"    invoke wsprintf, addr buffer, addr fmt, {nodo.valor}\n    invoke StdOut, addr buffer\n"
         elif nodo.tipo == "IMPRIMIR_CADENA":
