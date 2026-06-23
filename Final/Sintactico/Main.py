@@ -2,7 +2,7 @@ import sys
 from AnalizadorLexico import AnalizadorLexico
 from Parser import Parser
 from GeneradorCodigo import GeneradorCodigo
-from arbol import VisualizadorAST, EstadisticasAST, VisualizadorBinario
+from arbol import VisualizadorAST, EstadisticasAST  # <-- Ya quitamos VisualizadorBinario
 
 def compilar(ruta_archivo):
     try:
@@ -11,20 +11,17 @@ def compilar(ruta_archivo):
             
         print("=== 1. ANALISIS LEXICO ===")
         tokens = AnalizadorLexico(codigo).escanear_tokens()
-        # for t in tokens: print(t)  # Puedes descomentar esto si quieres ver la lista de tokens
         print(f"[{len(tokens)} tokens generados]")
         
         print("\n=== 2. ANALISIS SINTACTICO (AST) ===")
         ast = Parser(tokens).parse()
         
-        print("\n--- DETALLES DE EXPRESIONES BINARIAS ---")
-        vis_binario = VisualizadorBinario()
-        vis_binario.visualizar(ast)
-        
+        # Muestra el árbol unificado gigante
         print("--- ESTRUCTURA COMPLETA DEL ARBOL ---")
         visualizador = VisualizadorAST()
         print(visualizador.visualizar(ast))
         
+        # Muestra las estadísticas
         estadisticas = EstadisticasAST()
         estadisticas.analizar(ast)
         print(estadisticas.obtener_reporte())
@@ -37,7 +34,6 @@ def compilar(ruta_archivo):
         print(f"ÉXITO: Ensamblador generado en '{salida}'")
         
     except SyntaxError as e:
-        # ¡ESTO ATRAPA LOS ERRORES COMO EL PUNTO Y COMA FALTANTE!
         print(f"\n[✘] COMPILACIÓN DETENIDA: {e}")
     except Exception as e:
         print(f"\n[✘] Error del compilador: {e}")
