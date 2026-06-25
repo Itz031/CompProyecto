@@ -1,4 +1,4 @@
-from Sintactico.Catalogo import TokenType
+from Catalogo import TokenType
 from ASTNode import ASTNode
 
 class Parser:
