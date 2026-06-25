@@ -1,10 +1,6 @@
-"""
-Visualizador del Árbol de Sintaxis Abstracta (AST) y Estadísticas
-"""
 
 class VisualizadorAST:
-    """Genera una representación visual de todo el AST como un solo árbol"""
-    
+ 
     def __init__(self):
         self.salida = []
     

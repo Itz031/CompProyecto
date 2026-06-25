@@ -1,13 +1,13 @@
 import re
-from TokenType import TokenType
+from Sintactico.Catalogo import Catalogo
 from Token import Token
 
 class AnalizadorLexico:
     def __init__(self, codigo):
         self.codigo = codigo
         self.palabras_reservadas = {
-            "int": TokenType.INT, "if": TokenType.IF, "else": TokenType.ELSE, 
-            "while": TokenType.WHILE, "print": TokenType.PRINT, "return": TokenType.RETURN
+            "int": Catalogo.INT, "if": Catalogo.IF, "else": Catalogo.ELSE, 
+            "while": Catalogo.WHILE, "print": Catalogo.PRINT, "return": Catalogo.RETURN
         }
         
     def escanear_tokens(self):
@@ -32,14 +32,14 @@ class AnalizadorLexico:
                 continue
                 
             if t == 'ID': 
-                tipo_real = self.palabras_reservadas.get(v, TokenType.IDENTIFICADOR)
+                tipo_real = self.palabras_reservadas.get(v, Catalogo.IDENTIFICADOR)
                 tokens.append(Token(tipo_real, v, linea_actual))
             elif t == 'CADENA': 
-                tokens.append(Token(TokenType.CADENA, v, linea_actual))
+                tokens.append(Token(Catalogo.CADENA, v, linea_actual))
             else: 
-                tokens.append(Token(TokenType[t], v, linea_actual))
+                tokens.append(Token(Catalogo[t], v, linea_actual))
                 
             linea_actual += v.count('\n')
             
-        tokens.append(Token(TokenType.EOF, "EOF", linea_actual))
+        tokens.append(Token(Catalogo.EOF, "EOF", linea_actual))
         return tokens
