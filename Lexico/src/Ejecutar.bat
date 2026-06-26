@@ -1,6 +1,8 @@
 @echo off
 if "%~1"=="" (
-    echo Uso correcto: doMain.bat NombrePrograma
+    echo Uso correcto: Ejecutar.bat nombre_del_archivo.c
     exit /b 1
 )
-python "%~1.py" archivo_codigo.txt
+
+echo 
+python Main.py "%~1"

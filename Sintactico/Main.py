@@ -2,22 +2,22 @@ import sys
 from AnalizadorLexico import AnalizadorLexico
 from Parser import Parser
 from GeneradorCodigo import GeneradorCodigo
-from arbol import VisualizadorAST, EstadisticasAST  # <-- Ya quitamos VisualizadorBinario
+from arbol import VisualizadorAST, EstadisticasAST
 
 def compilar(ruta_archivo):
     try:
         with open(ruta_archivo, 'r') as f:
             codigo = f.read()
             
-        print("=== 1. ANALISIS LEXICO ===")
+        print("------- ANALISIS LEXICO ------")
         tokens = AnalizadorLexico(codigo).escanear_tokens()
         print(f"[{len(tokens)} tokens generados]")
         
-        print("\n=== 2. ANALISIS SINTACTICO (AST) ===")
+        print("\n----- ANALISIS SINTACTICO (AST) -----")
         ast = Parser(tokens).parse()
         
         # Muestra el árbol unificado gigante
-        print("--- ESTRUCTURA COMPLETA DEL ARBOL ---")
+        print("---- ESTRUCTURA COMPLETA DEL ARBOL ---")
         visualizador = VisualizadorAST()
         print(visualizador.visualizar(ast))
         
@@ -26,7 +26,7 @@ def compilar(ruta_archivo):
         estadisticas.analizar(ast)
         print(estadisticas.obtener_reporte())
         
-        print("\n=== 3. GENERACION DE CODIGO MASM ===")
+        print("\n----- GENERACION DE CODIGO MASM ------")
         codigo_ensamblador = GeneradorCodigo(ast).generar()
         
         salida = ruta_archivo.replace(".c", ".asm")

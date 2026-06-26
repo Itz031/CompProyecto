@@ -12,8 +12,8 @@ class AnalizadorLexico:
         
     def escanear_tokens(self):
         tokens = []
-        linea_actual = 1  # Llevamos el conteo de la línea
-        
+        linea_actual = 1  
+        #expresiones regulares
         patrones = [
             ('CADENA', r'".*?"'), ('NUMERO', r'\d+'), ('ID', r'[a-zA-Z_]\w*'),
             ('IGUAL', r'=='), ('ASIGNACION', r'='), ('SUMA', r'\+'), ('RESTA', r'-'),
@@ -29,7 +29,7 @@ class AnalizadorLexico:
             
             if t in ['WHITESPACE', 'COMMENT']:
                 linea_actual += v.count('\n')
-                continue
+                continue    #ignora esto y pasa a la siguente linea para no agregarlo a la lista de tokens
                 
             if t == 'ID': 
                 tipo_real = self.palabras_reservadas.get(v, TokenType.IDENTIFICADOR)
